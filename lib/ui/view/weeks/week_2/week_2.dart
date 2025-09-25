@@ -1,28 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:testt/card_custom.dart';
+import 'package:testt/shared/widget/card_custom.dart';
 import 'package:testt/core/constant/app_colors.dart';
-import 'package:testt/home.dart';
 import 'package:testt/shared/appbar.dart';
-import 'package:testt/weeks/task-2.dart';
-import 'package:testt/weeks/task_1.dart';
+import 'package:testt/ui/view/weeks/week_1/task-2.dart';
+import 'package:testt/ui/view/weeks/week_1/task_1.dart';
+import 'package:testt/ui/view/weeks/week_1/week_1_controller.dart';
+import 'package:testt/ui/view/weeks/week_2/week_2_controller.dart';
 
-class Week1 extends StatelessWidget {
+class Week2 extends StatelessWidget {
   final String label;
 
-  Week1({super.key, required this.label});
-  final List<String> cardWeek = ["simple counter App", "Basic contact Form"];
-  void selectCard(int index, String label) {
-    switch (index) {
-      case 1:
-        Get.to(Task1(label2: label));
-      case 2:
-        Get.to(Task2(label2: label));
-    }
-  }
+  Week2({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
+    final Week2Controller controller = Get.put(Week2Controller());
     return Scaffold(
       appBar: Appbar(title: label, color: AppColors.mainColor),
       body: Padding(
@@ -36,16 +29,17 @@ class Week1 extends StatelessWidget {
                   crossAxisSpacing: 10,
                   mainAxisSpacing: 10,
                 ),
-                children: List.generate(cardWeek.length, (index) {
+                children: List.generate(controller.cardWeek2.length, (index) {
                   return CardWeek(
                     ontap: () {
-                      selectCard(index + 1, (index + 1).toString());
+                      controller.selectCard2(index + 1, (index + 1).toString());
                     },
                     color: AppColors.mainColor,
                     sizee: 15,
                     text1: (index + 1).toString(),
 
-                    text2: cardWeek[index],
+                    text2: controller.cardWeek2[index],
+                    size2: 18,
                   );
                 }),
               ),

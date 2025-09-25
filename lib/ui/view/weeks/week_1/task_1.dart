@@ -3,7 +3,7 @@ import 'package:get/get.dart';
 import 'package:get/get_core/get_core.dart';
 import 'package:testt/core/constant/app_colors.dart';
 import 'package:testt/shared/appbar.dart';
-import 'package:testt/weeks/tasK_1_controller.dart';
+import 'package:testt/ui/view/weeks/week_1/tasK_1_controller.dart';
 
 class Task1 extends StatelessWidget {
   final String label2;

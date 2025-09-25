@@ -7,13 +7,16 @@ class CardWeek extends StatelessWidget {
   final VoidCallback? ontap;
   final double sizee;
   final Color? color;
+  final double size2;
 
   const CardWeek({
     super.key,
     required this.text1,
     this.text2,
     this.ontap,
-    required this.sizee, required this.color,
+    required this.sizee,
+    required this.color,
+    required this.size2,
   });
 
   @override
@@ -28,15 +31,17 @@ class CardWeek extends StatelessWidget {
             children: [
               Text(
                 text1,
-                style: TextStyle(fontSize: sizee, color:color),
+                style: TextStyle(fontSize: sizee, color: color),
               ),
               if (text2 != null)
                 Text(
                   text2 ?? '0',
                   style: TextStyle(
-                    fontSize: sizee,
+                    fontSize: size2,
                     color: AppColors.blackColor,
                   ),
+                  textAlign: TextAlign.center,
+                  maxLines: 2,
                 ),
             ],
           ),

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/get_navigation.dart';
-import 'package:testt/home.dart';
-import 'package:testt/splash_screen.dart';
+import 'package:testt/ui/view/home/home.dart';
+import 'package:testt/splash_screen/splash_screen.dart';
 
 void main() {
   runApp(const MyApp());
@@ -17,7 +17,7 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
 
-      home: Home(),
+      home: SplashScreen(),
     );
   }
 }

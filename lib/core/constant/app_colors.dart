@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static Color mainColor = const Color(0xFF5A5FD0);
+  static Color mainColor = Color(0xFF5A5FD0);
   static Color error = Colors.red.shade600;
   static Color success = Colors.green.shade600;
   static Color textColor = const Color(0xFF525253);
