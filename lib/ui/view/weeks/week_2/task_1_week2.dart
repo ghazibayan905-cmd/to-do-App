@@ -160,7 +160,7 @@ class Task1Week2 extends StatelessWidget {
             Expanded(
               child: GetBuilder<Task1Week2Controller>(
                 builder: (controller) {
-                  final allItems = [...tiles, ...controller.items];
+                  final allItems = [...controller.items, ...tiles];
 
                   return ListView.builder(
                     padding: const EdgeInsets.all(16),
@@ -177,7 +177,8 @@ class Task1Week2 extends StatelessWidget {
                             children: [
                               SlidableAction(
                                 onPressed: (context) async {
-                                  if (index >= tiles.length) {
+                                  if (index < tiles.length) {
+                                    controller.removeItem(index);
                                     bool confirm = await showDialog(
                                       context: context,
                                       builder: (context) {
