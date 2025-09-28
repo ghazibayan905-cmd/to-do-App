@@ -6,6 +6,7 @@ class CustomListTile extends StatelessWidget {
   final String title;
   final String subtitle;
   final VoidCallback? onTap;
+  final VoidCallback? onEdit;
 
   const CustomListTile({
     super.key,
@@ -13,6 +14,7 @@ class CustomListTile extends StatelessWidget {
     required this.title,
     required this.subtitle,
     this.onTap,
+    this.onEdit,
   });
 
   @override
@@ -20,6 +22,10 @@ class CustomListTile extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       leading: Image.asset(image, width: 100, height: 100, fit: BoxFit.cover),
+      trailing: InkWell(
+        onTap: onEdit,
+        child: Icon(Icons.edit, color: AppColors.mainColor),
+      ),
       title: Text(
         title,
         style: TextStyle(

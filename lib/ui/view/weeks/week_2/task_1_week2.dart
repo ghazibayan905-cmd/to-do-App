@@ -7,10 +7,15 @@ import 'package:testt/shared/appbar.dart';
 import 'package:testt/ui/view/weeks/week_2/task1_week2_controller.dart';
 import 'package:testt/ui/view/weeks/week_2/widget/custome_listTile.dart';
 
-class Task1Week2 extends StatelessWidget {
+class Task1Week2 extends StatefulWidget {
   final String label3;
-  Task1Week2({super.key, required this.label3});
+  const Task1Week2({super.key, required this.label3});
 
+  @override
+  State<Task1Week2> createState() => _Task1Week2State();
+}
+
+class _Task1Week2State extends State<Task1Week2> {
   final List<Map<String, String>> tiles = [
     {
       "title": "Software department",
@@ -46,106 +51,41 @@ class Task1Week2 extends StatelessWidget {
 
   final TextEditingController titleController = TextEditingController();
   final TextEditingController bodyController = TextEditingController();
+  final TextEditingController searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     final Task1Week2Controller controller = Get.put(Task1Week2Controller());
 
     return Scaffold(
-      appBar: Appbar(color: AppColors.mainColor, title: "task-$label3-"),
+      appBar: Appbar(
+        color: AppColors.mainColor,
+        title: "task-${widget.label3}-",
+      ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return Dialog(
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: SingleChildScrollView(
-                    child: Column(
-                      mainAxisSize: MainAxisSize.min,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          "Input Information about item",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.mainColor,
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Text(
-                          "Title",
-                          style: TextStyle(color: AppColors.mainColor),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: titleController,
-                          decoration: InputDecoration(
-                            hintText: "Software department",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 20),
-                        Text(
-                          "Body",
-                          style: TextStyle(color: AppColors.mainColor),
-                        ),
-                        const SizedBox(height: 10),
-                        TextField(
-                          controller: bodyController,
-                          decoration: InputDecoration(
-                            hintText:
-                                "contain some languages like (java, python)",
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        Center(
-                          child: ElevatedButton(
-                            onPressed: () {
-                              controller.addItem(
-                                titleController.text,
-                                bodyController.text,
-                              );
-                              titleController.clear();
-                              bodyController.clear();
-                              Navigator.pop(context);
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.mainColor,
-                            ),
-                            child: Text(
-                              "Add",
-                              style: TextStyle(color: AppColors.whiteColor),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          );
+          _showAddDialog(context, controller);
         },
         backgroundColor: AppColors.mainColor,
         shape: const CircleBorder(),
         child: const Icon(Icons.add),
       ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
+            TextFormField(
+              controller: searchController,
+              decoration: InputDecoration(
+                hintText: 'Search',
+                prefixIcon: const Icon(Icons.search),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+              ),
+              onChanged: controller.updateSearchQuery,
+            ),
+            const SizedBox(height: 16),
             Center(
               child: Text(
                 "Simple Shopping List App",
@@ -162,11 +102,20 @@ class Task1Week2 extends StatelessWidget {
                 builder: (controller) {
                   final allItems = [...controller.items, ...tiles];
 
+                  final filteredItems = allItems.where((item) {
+                    final title = item['title']?.toLowerCase() ?? '';
+                    final subtitle = (item['subtitle'] ?? item['body'] ?? '')
+                        .toLowerCase();
+                    final query = controller.searchQuery.toLowerCase();
+                    return title.contains(query) || subtitle.contains(query);
+                  }).toList();
+
                   return ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: allItems.length,
+                    itemCount: filteredItems.length,
                     itemBuilder: (context, index) {
-                      final item = allItems[index];
+                      final item = filteredItems[index];
+                      final isAddedItem = controller.items.contains(item);
+                      final isOriginalItem = tiles.contains(item);
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -175,87 +124,27 @@ class Task1Week2 extends StatelessWidget {
                           endActionPane: ActionPane(
                             motion: const ScrollMotion(),
                             children: [
+                              // ✅ زر الحذف يعمل لكلا النوعين
                               SlidableAction(
                                 onPressed: (context) async {
-                                  if (index < tiles.length) {
-                                    controller.removeItem(index);
-                                    bool confirm = await showDialog(
-                                      context: context,
-                                      builder: (context) {
-                                        return AlertDialog(
-                                          title: Text(
-                                            " Confirm Delete",
-                                            style: TextStyle(
-                                              color: AppColors.mainColor,
-                                              fontSize: 25,
-                                              fontWeight: FontWeight.bold,
-                                            ),
-                                          ),
-                                          content: Text(
-                                            "Are you sure delete this item",
-                                            style: TextStyle(
-                                              fontSize: 20,
-                                              color: AppColors.mainColor,
-                                            ),
-                                          ),
-                                          actions: [
-                                            ElevatedButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, false),
-                                              style: ElevatedButton.styleFrom(
-                                                side: BorderSide(
-                                                  color: AppColors.mainColor,
-                                                ),
-                                              ),
+                                  bool confirm = await _confirmDelete(context);
+                                  if (!confirm) return;
 
-                                              child: const Text("Cancel"),
-                                            ),
-                                            SizedBox(width: 20),
-                                            ElevatedButton(
-                                              onPressed: () =>
-                                                  Navigator.pop(context, true),
-                                              style: ElevatedButton.styleFrom(
-                                                side: BorderSide(
-                                                  color: AppColors.mainColor,
-                                                  width: 2,
-                                                ),
-                                                backgroundColor:
-                                                    AppColors.mainColor,
-                                                minimumSize: Size(100, 40),
-                                              ),
-                                              child: Text(
-                                                "ok",
-                                                style: TextStyle(
-                                                  color: AppColors.whiteColor,
-                                                ),
-                                              ),
-                                            ),
-                                          ],
-                                        );
-                                      },
+                                  if (isAddedItem) {
+                                    controller.removeItem(
+                                      controller.items.indexOf(item),
                                     );
-
-                                    if (confirm) {
-                                      controller.removeItem(
-                                        index - tiles.length,
-                                      );
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        const SnackBar(
-                                          content: Text("تم حذف العنصر"),
-                                        ),
-                                      );
-                                    }
-                                  } else {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text(
-                                          "لا يمكن حذف هذا العنصر الأصلي",
-                                        ),
-                                      ),
-                                    );
+                                  } else if (isOriginalItem) {
+                                    setState(() {
+                                      tiles.remove(item);
+                                    });
                                   }
+
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text("تم حذف العنصر ✅"),
+                                    ),
+                                  );
                                 },
                                 backgroundColor: Colors.red,
                                 foregroundColor: Colors.white,
@@ -268,8 +157,22 @@ class Task1Week2 extends StatelessWidget {
                             title: item['title'] ?? '',
                             subtitle: item['subtitle'] ?? item['body'] ?? '',
                             image: item['image'] ?? Appimages.education,
-                            onTap: () {
-                              print("تم الضغط على Tile ${index + 1}");
+                            onTap: () {},
+                            onEdit: () {
+                              if (isAddedItem) {
+                                _showEditDialogForAdded(
+                                  context,
+                                  controller,
+                                  controller.items.indexOf(item),
+                                  item,
+                                );
+                              } else if (isOriginalItem) {
+                                _showEditDialogForOriginal(
+                                  context,
+                                  tiles.indexOf(item),
+                                  item,
+                                );
+                              }
                             },
                           ),
                         ),
@@ -283,5 +186,169 @@ class Task1Week2 extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  // تعديل عنصر مضاف من المستخدم
+  void _showEditDialogForAdded(
+    BuildContext context,
+    Task1Week2Controller controller,
+    int index,
+    Map<String, String> item,
+  ) {
+    titleController.text = item['title'] ?? '';
+    bodyController.text = item['body'] ?? '';
+    showDialog(
+      context: context,
+      builder: (context) {
+        return _buildItemDialog(
+          context,
+          title: "Edit Item",
+          onConfirm: () {
+            controller.editItem(
+              index,
+              titleController.text,
+              bodyController.text,
+            );
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  // تعديل عنصر أصلي
+  void _showEditDialogForOriginal(
+    BuildContext context,
+    int index,
+    Map<String, String> item,
+  ) {
+    titleController.text = item['title'] ?? '';
+    bodyController.text = item['subtitle'] ?? '';
+    showDialog(
+      context: context,
+      builder: (context) {
+        return _buildItemDialog(
+          context,
+          title: "Edit Original Item",
+          onConfirm: () {
+            setState(() {
+              tiles[index]['title'] = titleController.text;
+              tiles[index]['subtitle'] = bodyController.text;
+            });
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  void _showAddDialog(BuildContext context, Task1Week2Controller controller) {
+    titleController.clear();
+    bodyController.clear();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return _buildItemDialog(
+          context,
+          title: "Add New Item",
+          onConfirm: () {
+            controller.addItem(titleController.text, bodyController.text);
+            Navigator.pop(context);
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildItemDialog(
+    BuildContext context, {
+    required String title,
+    required VoidCallback onConfirm,
+  }) {
+    return Dialog(
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                title,
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.mainColor,
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: titleController,
+                decoration: InputDecoration(
+                  labelText: "Title",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              TextField(
+                controller: bodyController,
+                decoration: InputDecoration(
+                  labelText: "Body",
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: ElevatedButton(
+                  onPressed: onConfirm,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.mainColor,
+                  ),
+                  child: Text(
+                    "Save",
+                    style: TextStyle(color: AppColors.whiteColor),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<bool> _confirmDelete(BuildContext context) async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(
+              "Confirm Delete",
+              style: TextStyle(
+                color: AppColors.mainColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            content: const Text("هل أنت متأكد من حذف هذا العنصر؟"),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text("إلغاء"),
+              ),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.mainColor,
+                ),
+                child: const Text("حذف"),
+              ),
+            ],
+          ),
+        ) ??
+        false;
   }
 }
