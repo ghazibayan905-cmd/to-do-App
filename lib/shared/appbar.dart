@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:testt/core/constant/app_colors.dart';
 
 class Appbar extends StatelessWidget implements PreferredSizeWidget {
-  final Color color;
+  final Color? color;
   final String title;
 
-  const Appbar({super.key, required this.color, required this.title});
+  const Appbar({super.key, this.color, required this.title});
 
   @override
   Widget build(BuildContext context) {
@@ -20,7 +20,7 @@ class Appbar extends StatelessWidget implements PreferredSizeWidget {
           fontWeight: FontWeight.w700,
         ),
       ),
-      backgroundColor: color,
+      backgroundColor: color ?? AppColors.mainColor,
     );
   }
 

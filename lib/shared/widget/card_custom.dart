@@ -25,6 +25,10 @@ class CardWeek extends StatelessWidget {
       onTap: ontap,
       child: Card(
         color: AppColors.whiteColor,
+
+        shadowColor: AppColors.mainColor,
+
+        elevation: 4,
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -46,8 +50,6 @@ class CardWeek extends StatelessWidget {
             ],
           ),
         ),
-        shadowColor: const Color.fromARGB(255, 116, 122, 124),
-        elevation: 4,
       ),
     );
   }

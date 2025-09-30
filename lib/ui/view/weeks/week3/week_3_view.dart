@@ -3,17 +3,17 @@ import 'package:get/get.dart';
 import 'package:testt/shared/widget/card_custom.dart';
 import 'package:testt/core/constant/app_colors.dart';
 import 'package:testt/shared/appbar.dart';
+import 'package:testt/ui/view/weeks/week3/week_3_controller.dart';
 
-import 'package:testt/ui/view/weeks/week_2/week_2_controller.dart';
 
-class Week2 extends StatelessWidget {
+class Week3View extends StatelessWidget {
   final String label;
 
-  Week2({super.key, required this.label});
+  Week3View ({super.key, required this.label});
 
   @override
   Widget build(BuildContext context) {
-    final Week2Controller controller = Get.put(Week2Controller());
+    final Week3Controller controller = Get.put(Week3Controller());
     return Scaffold(
       appBar: Appbar(title: label, color: AppColors.mainColor),
       body: Padding(
@@ -30,7 +30,7 @@ class Week2 extends StatelessWidget {
                 children: List.generate(controller.cardWeek2.length, (index) {
                   return CardWeek(
                     ontap: () {
-                      controller.selectCard2(index + 1, (index + 1).toString());
+                      controller.selectCard3(index + 1, (index + 1).toString());
                     },
                     color: AppColors.mainColor,
                     sizee: 15,

@@ -7,50 +7,14 @@ import 'package:testt/shared/appbar.dart';
 import 'package:testt/ui/view/weeks/week_2/task1_week2_controller.dart';
 import 'package:testt/ui/view/weeks/week_2/widget/custome_listTile.dart';
 
-class Task1Week2 extends StatefulWidget {
+class Task1Week2 extends StatelessWidget {
   final String label3;
-  const Task1Week2({super.key, required this.label3});
-
-  @override
-  State<Task1Week2> createState() => _Task1Week2State();
-}
-
-class _Task1Week2State extends State<Task1Week2> {
-  final List<Map<String, String>> tiles = [
-    {
-      "title": "Software department",
-      "subtitle": "Flutter Custom Animation - Grocery App ",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Design and graphics",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Video montage and editing",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Practical and vocational training",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Technical and Software support",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Digital marketing and social media management",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-  ];
+   Task1Week2({super.key, required this.label3});
 
   final TextEditingController titleController = TextEditingController();
+
   final TextEditingController bodyController = TextEditingController();
+
   final TextEditingController searchController = TextEditingController();
 
   @override
@@ -60,7 +24,7 @@ class _Task1Week2State extends State<Task1Week2> {
     return Scaffold(
       appBar: Appbar(
         color: AppColors.mainColor,
-        title: "task-${widget.label3}-",
+        title: "task-$label3-",
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
@@ -100,7 +64,7 @@ class _Task1Week2State extends State<Task1Week2> {
             Expanded(
               child: GetBuilder<Task1Week2Controller>(
                 builder: (controller) {
-                  final allItems = [...controller.items, ...tiles];
+                  final allItems = [...controller.items, ...controller.tiles];
 
                   final filteredItems = allItems.where((item) {
                     final title = item['title']?.toLowerCase() ?? '';
@@ -115,7 +79,7 @@ class _Task1Week2State extends State<Task1Week2> {
                     itemBuilder: (context, index) {
                       final item = filteredItems[index];
                       final isAddedItem = controller.items.contains(item);
-                      final isOriginalItem = tiles.contains(item);
+                      final isOriginalItem =controller.tiles.contains(item);
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
@@ -124,7 +88,6 @@ class _Task1Week2State extends State<Task1Week2> {
                           endActionPane: ActionPane(
                             motion: const ScrollMotion(),
                             children: [
-                              // ✅ زر الحذف يعمل لكلا النوعين
                               SlidableAction(
                                 onPressed: (context) async {
                                   bool confirm = await _confirmDelete(context);
@@ -135,14 +98,14 @@ class _Task1Week2State extends State<Task1Week2> {
                                       controller.items.indexOf(item),
                                     );
                                   } else if (isOriginalItem) {
-                                    setState(() {
-                                      tiles.remove(item);
-                                    });
+                                    controller.removeTile(
+                                      controller.tiles.indexOf(item),
+                                    );
                                   }
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
-                                      content: Text("تم حذف العنصر ✅"),
+                                      content: Text("تم حذف العنصر "),
                                     ),
                                   );
                                 },
@@ -169,7 +132,7 @@ class _Task1Week2State extends State<Task1Week2> {
                               } else if (isOriginalItem) {
                                 _showEditDialogForOriginal(
                                   context,
-                                  tiles.indexOf(item),
+                                  controller.tiles.indexOf(item),
                                   item,
                                 );
                               }
@@ -188,7 +151,6 @@ class _Task1Week2State extends State<Task1Week2> {
     );
   }
 
-  // تعديل عنصر مضاف من المستخدم
   void _showEditDialogForAdded(
     BuildContext context,
     Task1Week2Controller controller,
@@ -216,31 +178,34 @@ class _Task1Week2State extends State<Task1Week2> {
     );
   }
 
-  // تعديل عنصر أصلي
-  void _showEditDialogForOriginal(
-    BuildContext context,
-    int index,
-    Map<String, String> item,
-  ) {
-    titleController.text = item['title'] ?? '';
-    bodyController.text = item['subtitle'] ?? '';
-    showDialog(
-      context: context,
-      builder: (context) {
-        return _buildItemDialog(
-          context,
-          title: "Edit Original Item",
-          onConfirm: () {
-            setState(() {
-              tiles[index]['title'] = titleController.text;
-              tiles[index]['subtitle'] = bodyController.text;
-            });
-            Navigator.pop(context);
-          },
-        );
-      },
-    );
-  }
+void _showEditDialogForOriginal(
+  BuildContext context,
+  int index,
+  Map<String, String> item,
+) {
+  final controller = Get.find<Task1Week2Controller>(); 
+
+  titleController.text = item['title'] ?? '';
+  bodyController.text = item['subtitle'] ?? '';
+
+  showDialog(
+    context: context,
+    builder: (context) {
+      return _buildItemDialog(
+        context,
+        title: "Edit Original Item",
+        onConfirm: () {
+          controller.editTile(
+            index,
+            titleController.text,
+            bodyController.text,
+          );
+          Navigator.pop(context);
+        },
+      );
+    },
+  );
+}
 
   void _showAddDialog(BuildContext context, Task1Week2Controller controller) {
     titleController.clear();
@@ -333,18 +298,18 @@ class _Task1Week2State extends State<Task1Week2> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-            content: const Text("هل أنت متأكد من حذف هذا العنصر؟"),
+            content: const Text("Are you sure to delete this item"),
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text("إلغاء"),
+                child: const Text("cancel"),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.mainColor,
                 ),
-                child: const Text("حذف"),
+                child: const Text("delete"),
               ),
             ],
           ),
