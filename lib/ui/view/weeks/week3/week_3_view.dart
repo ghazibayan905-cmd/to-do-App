@@ -29,7 +29,7 @@ class Week3View extends StatelessWidget {
                 children: List.generate(controller.cardWeek3.length, (index) {
                   return CardWeek(
                     ontap: () {
-                      controller.selectCard3(index + 1, (index + 1).toString());
+                      controller.selectCard3(index, (index + 1).toString());
                     },
                     color: AppColors.mainColor,
                     sizee: 15,

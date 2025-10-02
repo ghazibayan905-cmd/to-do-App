@@ -1,0 +1,79 @@
+import 'dart:convert';
+
+import 'package:path_provider/path_provider.dart' as path_provider;
+import 'package:hive/hive.dart';
+
+class HiveRepository {
+  static String HIVE_FIRST_LOGIN = "first_login";
+  static String HIVE_LOGIN_MODEL = 'login_model';
+  static String HIVE_TOKEN_INFO = 'token_info';
+  static String HIVE_USER_INFO = 'user_info';
+  static String HIVE_GENERAL_BOX = "app_general_info";
+  static String hive_weeks = "weeks_info";
+  late Box primaryBox;
+
+  Future<void> init() async {
+    final appDocumentDirectory = await path_provider
+        .getApplicationDocumentsDirectory();
+    Hive.init(appDocumentDirectory.path);
+    primaryBox = await Hive.openBox(HIVE_GENERAL_BOX);
+  }
+
+  Future<void> clearHive() async {
+    if (primaryBox.isNotEmpty) {
+      await primaryBox.clear();
+    }
+  }
+
+  // Future<void> openHive() async {
+  //   primaryBox = await Hive.openBox(HIVE_GENERAL_BOX);
+  // }
+
+  // String get getAppLanguage => Hive.box(HIVE_GENERAL_BOX)
+  //     .get(PREF_APP_LANG, defaultValue: AppConfig.defaultLanguage);
+
+  Future<void> setTokenInfo(String value) async {
+    await primaryBox.put(HIVE_TOKEN_INFO, value);
+  }
+
+  String get getTokenInfo => primaryBox.get(HIVE_TOKEN_INFO, defaultValue: '');
+
+  Future<void> setWeeksInfo(List<String> value) async {
+    await primaryBox.put(hive_weeks, jsonEncode(value));
+  }
+
+  List<String> getWeeksInfo() {
+    List<dynamic> decodedList = jsonDecode(
+      primaryBox.get(hive_weeks, defaultValue: []),
+    );
+    return List<String>.from(decodedList);
+  }
+
+  // Future<void> setUserInfo(UserInfo value) async {
+
+  //   await Hive.box(HIVE_GENERAL_BOX)
+  //       .put(HIVE_USER_INFO, jsonEncode(value.toJson()));
+  // }
+
+  // UserInfo? getUserInfo() {
+  //   if (Hive.box(HIVE_GENERAL_BOX).containsKey(HIVE_USER_INFO)) {
+  //     return UserInfo.fromJson(jsonDecode(
+  //         Hive.box(HIVE_GENERAL_BOX).get(HIVE_USER_INFO, defaultValue: {})));
+  //   } else {
+  //     return null;
+  //   }
+  // }
+  // Future<void> setAdminInfo(AdminInfo value) async {
+  //   await Hive.box(HIVE_GENERAL_BOX)
+  //       .put(HIVE_ADMIN_INFO, jsonEncode(value.toJson()));
+  // }
+
+  // AdminInfo? getAdminInfo() {
+  //   if (Hive.box(HIVE_GENERAL_BOX).containsKey(HIVE_ADMIN_INFO)) {
+  //     return AdminInfo.fromJson(jsonDecode(
+  //         Hive.box(HIVE_GENERAL_BOX).get(HIVE_ADMIN_INFO, defaultValue: {})));
+  //   } else {
+  //     return null;
+  //   }
+  // }
+}
