@@ -13,6 +13,7 @@ class Task1Week3 extends StatelessWidget {
   Widget build(BuildContext context) {
     Task1Week3Controller controller = Get.put(Task1Week3Controller());
     controller.initLists();
+
     return PopScope(
       canPop: false,
       onPopInvokedWithResult: (_, _) {
@@ -20,103 +21,161 @@ class Task1Week3 extends StatelessWidget {
           controller.currentQuestion--;
           controller.countCorrectAnswer--;
           controller.update();
-        } else {}
+        }
       },
       child: Scaffold(
         appBar: Appbar(title: "Dart Language"),
         body: GetBuilder<Task1Week3Controller>(
           builder: (c) {
-            return Column(
-              children: [
-                Text(
-                  (controller.currentQuestion + 1).toString() +
-                      "/" +
-                      controller.quiz[0].questions.length.toString(),
-                ),
-                // LinearProgressIndicator(),
-                Text(
-                  controller
-                      .quiz[0]
-                      .questions[controller.currentQuestion]
-                      .question,
-                ),
+            final totalQuestions = controller.quiz[0].questions.length;
+            final currentQuestion = controller.currentQuestion + 1;
+            final progress = currentQuestion / totalQuestions;
 
-                ...List.generate(
-                  controller
-                      .quiz[0]
-                      .questions[controller.currentQuestion]
-                      .answers
-                      .length,
-                  (index) {
-                    return CustomContainerAnsw(
-                      groupValue: controller
-                          .quiz[0]
-                          .questions[controller.currentQuestion]
-                          .chooseAnswers,
-                      answer: controller
-                          .quiz[0]
-                          .questions[controller.currentQuestion]
-                          .answers[index]
-                          .answer,
-                      onChanged: (value) {
-                        controller
-                                .quiz[0]
-                                .questions[controller.currentQuestion]
-                                .chooseAnswers =
-                            value;
-                        controller.update();
-                      },
-                    );
-                  },
-                ),
-                ElevatedButton(
-                  onPressed: () {
-                    if (controller
+            return Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  Container(
+                    height: 22,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[300],
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                    child: Stack(
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 400),
+                          curve: Curves.easeInOut,
+                          width: MediaQuery.of(context).size.width * progress,
+                          decoration: BoxDecoration(
+                            color: AppColors.mainColor,
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        Center(
+                          child: Text(
+                            "$currentQuestion / $totalQuestions",
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  /// نص السؤال
+                  Text(
+                    controller
+                        .quiz[0]
+                        .questions[controller.currentQuestion]
+                        .question,
+                    style: const TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+
+                  /// خيارات الإجابة
+                  ...List.generate(
+                    controller
+                        .quiz[0]
+                        .questions[controller.currentQuestion]
+                        .answers
+                        .length,
+                    (index) {
+                      return CustomContainerAnsw(
+                        groupValue: controller
                             .quiz[0]
                             .questions[controller.currentQuestion]
-                            .chooseAnswers !=
-                        null) {
-                      if (controller.quiz[0].questions.length !=
-                          controller.currentQuestion + 1) {
-                        controller
-                            .quiz[controller.currentQuiz]
+                            .chooseAnswers,
+                        answer: controller
+                            .quiz[0]
                             .questions[controller.currentQuestion]
-                            .answers
-                            .forEach((ans) {
-                              if (ans.answer ==
-                                  controller
-                                      .quiz[controller.currentQuiz]
-                                      .questions[controller.currentQuestion]
-                                      .chooseAnswers) {
-                                controller.isCorrectAnswer[controller
-                                        .currentQuestion] =
-                                    ans.id ==
+                            .answers[index]
+                            .answer,
+                        onChanged: (value) {
+                          controller
+                                  .quiz[0]
+                                  .questions[controller.currentQuestion]
+                                  .chooseAnswers =
+                              value;
+                          controller.update();
+                        },
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 20),
+
+                  /// زر "التالي"
+                  ElevatedButton(
+                    onPressed: () {
+                      if (controller
+                              .quiz[0]
+                              .questions[controller.currentQuestion]
+                              .chooseAnswers !=
+                          null) {
+                        if (controller.quiz[0].questions.length !=
+                            controller.currentQuestion + 1) {
+                          controller
+                              .quiz[controller.currentQuiz]
+                              .questions[controller.currentQuestion]
+                              .answers
+                              .forEach((ans) {
+                                if (ans.answer ==
                                     controller
                                         .quiz[controller.currentQuiz]
                                         .questions[controller.currentQuestion]
-                                        .answerIdTrue;
-                              }
-                            });
+                                        .chooseAnswers) {
+                                  controller.isCorrectAnswer[controller
+                                          .currentQuestion] =
+                                      ans.id ==
+                                      controller
+                                          .quiz[controller.currentQuiz]
+                                          .questions[controller.currentQuestion]
+                                          .answerIdTrue;
+                                }
+                              });
 
-                        controller.currentQuestion++;
-                        controller.update();
+                          controller.currentQuestion++;
+                          controller.update();
+                        } else {
+                          controller.quiz[0].questions.forEach((question) {
+                            print(question.chooseAnswers);
+                          });
+                          controller.handleFinishQuiz();
+                          Get.off(() => ResultPage());
+                        }
                       } else {
-                        controller.quiz[0].questions.forEach((question) {
-                          print(question.chooseAnswers);
-                        });
-                        controller.handleFinishQuiz();
-                        Get.off(() => ResultPage());
+                        Get.snackbar(
+                          "تنبيه",
+                          "الرجاء اختيار إجابة قبل المتابعة",
+                        );
                       }
-                    } else {
-                      Get.snackbar("failes", "please");
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    iconColor: AppColors.mainColor,
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppColors.mainColor,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      "Next",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: AppColors.whiteColor,
+                      ),
+                    ),
                   ),
-                  child: Text("Next"),
-                ),
-              ],
+                ],
+              ),
             );
           },
         ),

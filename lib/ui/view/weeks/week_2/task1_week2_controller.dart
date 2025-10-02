@@ -1,73 +1,81 @@
 import 'package:get/get.dart';
 import 'package:testt/core/constant/app_image.dart';
+import 'package:testt/core/model/week_2_model.dart';
 
 class Task1Week2Controller extends GetxController {
-  //TODO  قائمة وحدة للتعديل والاضافة والثابتة
+  final List<TaskItemModel> taskItems = [];
 
-  final List<Map<String, String>> items = [];
-  final List<Map<String, String>> editItems = [];
   String searchQuery = '';
-  final List<Map<String, String>> tiles = [
-    {
-      "title": "Software department",
-      "subtitle": "Flutter Custom Animation - Grocery App ",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Design and graphics",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Video montage and editing",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Practical and vocational training",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Technical and Software support",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-    {
-      "title": "Digital marketing and social media management",
-      "subtitle": "Flutter Custom Animation - Grocery App",
-      "image": Appimages.education,
-    },
-  ];
 
-  void addItem(String title, String body) {
-    items.add({"title": title, "body": body}); // TODO 3
+  @override
+  void onInit() {
+    super.onInit();
+    _initDefaultItems(); 
+  }
+
+  void _initDefaultItems() {
+    taskItems.addAll([
+      TaskItemModel(
+        title: "Software department",
+        subtitle: "Flutter Custom Animation - Grocery App",
+        image: Appimages.education,
+      ),
+      TaskItemModel(
+        title: "Design and graphics",
+        subtitle: "Flutter Custom Animation - Grocery App",
+        image: Appimages.education,
+      ),
+      TaskItemModel(
+        title: "Video montage and editing",
+        subtitle: "Flutter Custom Animation - Grocery App",
+        image: Appimages.education,
+      ),
+      TaskItemModel(
+        title: "Practical and vocational training",
+        subtitle: "Flutter Custom Animation - Grocery App",
+        image: Appimages.education,
+      ),
+      TaskItemModel(
+        title: "Technical and Software support",
+        subtitle: "Flutter Custom Animation - Grocery App",
+        image: Appimages.education,
+      ),
+      TaskItemModel(
+        title: "Digital marketing and social media management",
+        subtitle: "Flutter Custom Animation - Grocery App",
+        image: Appimages.education,
+      ),
+    ]);
+  }
+
+  void addItem(String title, String subtitle, String image) {
+    taskItems.add(TaskItemModel(title: title, subtitle: subtitle, image: image));
     update();
   }
 
   void removeItem(int index) {
-    items.removeAt(index);
+    taskItems.removeAt(index);
     update();
   }
 
-  void removeTile(int index) {
-    tiles.removeAt(index);
-    update();
-  }
-
-  void editItem(int index, String title, String body) {
-    items[index] = {"title": title, "body": body};
-    update();
-  }
-
-  void editTile(int index, String title, String subtitle) {
-    tiles[index]['title'] = title;
-    tiles[index]['subtitle'] = subtitle;
+  void editItem(int index, String newTitle, String newSubtitle, String newImage) {
+    taskItems[index].title = newTitle;
+    taskItems[index].subtitle = newSubtitle;
+    taskItems[index].image = newImage;
     update();
   }
 
   void updateSearchQuery(String value) {
     searchQuery = value;
     update();
+  }
+
+  List<TaskItemModel> get filteredItems {
+    if (searchQuery.isEmpty) return taskItems;
+    return taskItems
+        .where((item) =>
+            item.title.toLowerCase().contains(searchQuery.toLowerCase()) ||
+            item.subtitle.toLowerCase().contains(searchQuery.toLowerCase()))
+        .toList();
   }
 }

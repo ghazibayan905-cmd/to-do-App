@@ -3,18 +3,17 @@ import 'package:get/get.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:testt/core/constant/app_colors.dart';
 import 'package:testt/core/constant/app_image.dart';
+import 'package:testt/core/model/week_2_model.dart';
 import 'package:testt/shared/appbar.dart';
 import 'package:testt/ui/view/weeks/week_2/task1_week2_controller.dart';
 import 'package:testt/ui/view/weeks/week_2/widget/custome_listTile.dart';
 
 class Task1Week2 extends StatelessWidget {
   final String label3;
-   Task1Week2({super.key, required this.label3});
+  Task1Week2({super.key, required this.label3});
 
   final TextEditingController titleController = TextEditingController();
-
-  final TextEditingController bodyController = TextEditingController();
-
+  final TextEditingController subtitleController = TextEditingController();
   final TextEditingController searchController = TextEditingController();
 
   @override
@@ -22,14 +21,9 @@ class Task1Week2 extends StatelessWidget {
     final Task1Week2Controller controller = Get.put(Task1Week2Controller());
 
     return Scaffold(
-      appBar: Appbar(
-        color: AppColors.mainColor,
-        title: "task-$label3-",
-      ),
+      appBar: Appbar(color: AppColors.mainColor, title: "task-$label3-"),
       floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _showAddDialog(context, controller);
-        },
+        onPressed: () => _showAddDialog(context, controller),
         backgroundColor: AppColors.mainColor,
         shape: const CircleBorder(),
         child: const Icon(Icons.add),
@@ -54,7 +48,7 @@ class Task1Week2 extends StatelessWidget {
               child: Text(
                 "Simple Shopping List App",
                 style: TextStyle(
-                  fontSize: 30,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                   color: AppColors.mainColor,
                 ),
@@ -64,44 +58,30 @@ class Task1Week2 extends StatelessWidget {
             Expanded(
               child: GetBuilder<Task1Week2Controller>(
                 builder: (controller) {
-                  final allItems = [...controller.items, ...controller.tiles];
+                  final filteredItems = controller.filteredItems;
 
-                  final filteredItems = allItems.where((item) {
-                    final title = item['title']?.toLowerCase() ?? '';
-                    final subtitle = (item['subtitle'] ?? item['body'] ?? '')
-                        .toLowerCase();
-                    final query = controller.searchQuery.toLowerCase();
-                    return title.contains(query) || subtitle.contains(query);
-                  }).toList();
+                  if (filteredItems.isEmpty) {
+                    return const Center(child: Text("No items found"));
+                  }
 
                   return ListView.builder(
                     itemCount: filteredItems.length,
                     itemBuilder: (context, index) {
-                      final item = filteredItems[index];
-                      final isAddedItem = controller.items.contains(item);
-                      final isOriginalItem =controller.tiles.contains(item);
+                      final TaskItemModel item = filteredItems[index];
 
                       return Padding(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         child: Slidable(
-                          key: ValueKey(item['title'] ?? index.toString()),
+                          key: ValueKey(item.title),
                           endActionPane: ActionPane(
                             motion: const ScrollMotion(),
                             children: [
                               SlidableAction(
                                 onPressed: (context) async {
-                                  bool confirm = await _confirmDelete(context);
+                                  final confirm = await _confirmDelete(context);
                                   if (!confirm) return;
 
-                                  if (isAddedItem) {
-                                    controller.removeItem(
-                                      controller.items.indexOf(item),
-                                    );
-                                  } else if (isOriginalItem) {
-                                    controller.removeTile(
-                                      controller.tiles.indexOf(item),
-                                    );
-                                  }
+                                  controller.removeItem(index);
 
                                   ScaffoldMessenger.of(context).showSnackBar(
                                     const SnackBar(
@@ -117,25 +97,12 @@ class Task1Week2 extends StatelessWidget {
                             ],
                           ),
                           child: CustomListTile(
-                            title: item['title'] ?? '',
-                            subtitle: item['subtitle'] ?? item['body'] ?? '',
-                            image: item['image'] ?? Appimages.education,
+                            title: item.title,
+                            subtitle: item.subtitle,
+                            image: item.image,
                             onTap: () {},
                             onEdit: () {
-                              if (isAddedItem) {
-                                _showEditDialogForAdded(
-                                  context,
-                                  controller,
-                                  controller.items.indexOf(item),
-                                  item,
-                                );
-                              } else if (isOriginalItem) {
-                                _showEditDialogForOriginal(
-                                  context,
-                                  controller.tiles.indexOf(item),
-                                  item,
-                                );
-                              }
+                              _showEditDialog(context, controller, index, item);
                             },
                           ),
                         ),
@@ -151,14 +118,16 @@ class Task1Week2 extends StatelessWidget {
     );
   }
 
-  void _showEditDialogForAdded(
+  /// 📝 نافذة تعديل عنصر
+  void _showEditDialog(
     BuildContext context,
     Task1Week2Controller controller,
     int index,
-    Map<String, String> item,
+    TaskItemModel item,
   ) {
-    titleController.text = item['title'] ?? '';
-    bodyController.text = item['body'] ?? '';
+    titleController.text = item.title;
+    subtitleController.text = item.subtitle;
+
     showDialog(
       context: context,
       builder: (context) {
@@ -169,7 +138,8 @@ class Task1Week2 extends StatelessWidget {
             controller.editItem(
               index,
               titleController.text,
-              bodyController.text,
+              subtitleController.text,
+              item.image, // نحافظ على الصورة نفسها
             );
             Navigator.pop(context);
           },
@@ -178,38 +148,11 @@ class Task1Week2 extends StatelessWidget {
     );
   }
 
-void _showEditDialogForOriginal(
-  BuildContext context,
-  int index,
-  Map<String, String> item,
-) {
-  final controller = Get.find<Task1Week2Controller>(); 
-
-  titleController.text = item['title'] ?? '';
-  bodyController.text = item['subtitle'] ?? '';
-
-  showDialog(
-    context: context,
-    builder: (context) {
-      return _buildItemDialog(
-        context,
-        title: "Edit Original Item",
-        onConfirm: () {
-          controller.editTile(
-            index,
-            titleController.text,
-            bodyController.text,
-          );
-          Navigator.pop(context);
-        },
-      );
-    },
-  );
-}
-
+  /// ➕ نافذة إضافة عنصر جديد
   void _showAddDialog(BuildContext context, Task1Week2Controller controller) {
     titleController.clear();
-    bodyController.clear();
+    subtitleController.clear();
+
     showDialog(
       context: context,
       builder: (context) {
@@ -217,7 +160,11 @@ void _showEditDialogForOriginal(
           context,
           title: "Add New Item",
           onConfirm: () {
-            controller.addItem(titleController.text, bodyController.text);
+            controller.addItem(
+              titleController.text,
+              subtitleController.text,
+              Appimages.education, // صورة افتراضية
+            );
             Navigator.pop(context);
           },
         );
@@ -225,6 +172,7 @@ void _showEditDialogForOriginal(
     );
   }
 
+  /// 📌 نموذج النافذة الموحدة للإضافة أو التعديل
   Widget _buildItemDialog(
     BuildContext context, {
     required String title,
@@ -259,9 +207,9 @@ void _showEditDialogForOriginal(
               ),
               const SizedBox(height: 16),
               TextField(
-                controller: bodyController,
+                controller: subtitleController,
                 decoration: InputDecoration(
-                  labelText: "Body",
+                  labelText: "Subtitle",
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
@@ -287,6 +235,7 @@ void _showEditDialogForOriginal(
     );
   }
 
+  /// 🗑️ تأكيد الحذف
   Future<bool> _confirmDelete(BuildContext context) async {
     return await showDialog<bool>(
           context: context,
@@ -302,14 +251,14 @@ void _showEditDialogForOriginal(
             actions: [
               TextButton(
                 onPressed: () => Navigator.pop(context, false),
-                child: const Text("cancel"),
+                child: const Text("Cancel"),
               ),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.mainColor,
                 ),
-                child: const Text("delete"),
+                child: const Text("Delete"),
               ),
             ],
           ),
